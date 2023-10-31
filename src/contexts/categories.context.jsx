@@ -6,11 +6,8 @@ export const CategoriesContext = createContext({
 	categoriesMap: {},
 });
 
-
-
-
 const COLLECTIONS = gql`
-	query {
+	query GetCollections {
 		collections {
 			id
 			title
@@ -28,12 +25,19 @@ export const CategoriesProvider = ({ children }) => {
 	const { loading, error, data } = useQuery(COLLECTIONS);
 	const [categoriesMap, setCategoriesMap] = useState({});
 
-	console.log("loading: ", loading);
-	console.log(data);
-	console.log("loading: ", loading);
-	// console.log("error: ", error);
+	useEffect(() => {
+		if (data) {
+			const { collections } = data;
+			const collectionsMap = collections.reduce((acc, collection) => {
+				const { title, items } = collection;
+				acc[title.toLowerCase()] = items;
+				return acc;
+			}, {});
+			setCategoriesMap(collectionsMap);
+		}
+	}, [data]);
 
-	const value = { categoriesMap };
+	const value = { categoriesMap, loading };
 	return (
 		<CategoriesContext.Provider value={value}>
 			{children}
